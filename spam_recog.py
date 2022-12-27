@@ -3,27 +3,37 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from sklearn.model_selection import train_test_split
+from datetime import datetime
+
+now = datetime.now()
+dt_string = now.strftime("%d-%m-%Y_%H-%M")
+
+f = open("C:/Users/adenm/OneDrive/Desktop/Research/ChinwenduRG/Spam_recognition/reports/model_report" + dt_string + ".txt", "w+")
 
 #hyper parameters
-batch_size = 100
-num_epochs = 50 
-learning_rate = 0.01
+batch_size = 75
+num_epochs = 30 
+learning_rate = 0.05
 input_size = 57 
-hidden_size = 500
+hidden_size = 250
+
+f.write("batch_size = " + str(batch_size))
+f.write(f"\nnum_epochs = " + str(num_epochs))
+f.write(f"\nlearning_rate = " + str(learning_rate))
+f.write(f"\ninput_size = " + str(input_size))
+f.write(f"\nhidden_size = " + str(hidden_size) + "\n")
 
 class NeuralNetowrk(torch.nn.Module):
     def __init__(self):
         super(NeuralNetowrk, self).__init__()
         self.neural_stack = torch.nn.Sequential(
-            torch.nn.Linear(input_size, 500),
+            torch.nn.Linear(input_size, hidden_size*2),
             torch.nn.ReLU(),
-            torch.nn.Linear(500,1000),
+            torch.nn.Linear(hidden_size*2,hidden_size*2),
             torch.nn.ReLU(),
-            torch.nn.Linear(1000,500),
+            torch.nn.Linear(hidden_size*2,hidden_size),
             torch.nn.ReLU(),
-            torch.nn.Linear(500,250),
-            torch.nn.ReLU(),
-            torch.nn.Linear(250,1)
+            torch.nn.Linear(hidden_size,1)
         )
 
     def forward(self, input):
@@ -82,9 +92,11 @@ def train_loop(dataloader, model, loss_fn, optimizer):
         correct += (((torch.sigmoid(prediction) > 0.5)  * 1.0) == labels).sum()
 
         if batch % 100 == 0:
-            print(f"Current loss: {loss.item()}")
+            print(f"Train loss: {loss.item()}")
+            f.write(f"\nTrain loss: {loss.item()}")
 
     print(f"Train Accuracy: {correct/len(dataloader.dataset)}")
+    f.write(f"\nTrain Accuracy: {correct/len(dataloader.dataset)}")
     return train_losses
 
 def test_loop(dataloader, model, loss_fn):
@@ -98,10 +110,14 @@ def test_loop(dataloader, model, loss_fn):
             correct += (((torch.sigmoid(prediction) > 0.5)  * 1.0) == labels).sum()
 
     print(f"Test Average Loss: {test_loss/len(dataloader)}\nTest Accuracy: {correct/len(dataloader.dataset)}")
+    f.write(f"\nTest Average Loss: {test_loss/len(dataloader)}\nTest Accuracy: {correct/len(dataloader.dataset)}\n")
     return test_loss
 
 for t in range(num_epochs):
     print(f"\n-------------------------------\nEpoch {t+1}\n-------------------------------")
+    f.write(f"\n-------------------------------\nEpoch {t+1}\n-------------------------------")
     train_loop(train_loader, model, loss_fn, optimizer)
     test_loop(test_loader, model, loss_fn)
 print("Done!")
+
+f.close()
