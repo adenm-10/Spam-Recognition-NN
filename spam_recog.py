@@ -8,12 +8,12 @@ from datetime import datetime
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H-%M")
 
-f = open("C:/Users/adenm/OneDrive/Desktop/Research/ChinwenduRG/Spam_recognition/reports/model_report" + dt_string + ".txt", "w+")
+f = open("C:/Users/adenm/OneDrive/Desktop/Research/ChinwenduRG/Spam_recognition/reports/model_report_" + dt_string + ".txt", "w+")
 
 #hyper parameters
-batch_size = 75
+batch_size = 128
 num_epochs = 30 
-learning_rate = 0.05
+learning_rate = 0.01
 input_size = 57 
 hidden_size = 250
 
@@ -104,9 +104,9 @@ def test_loop(dataloader, model, loss_fn):
     test_loss, correct = 0,0
     with torch.no_grad():
         for data, labels in dataloader:
-            data, lables = data, labels.unsqueeze(dim=1)
+            data, labels = data, labels.unsqueeze(dim=1)
             prediction = model(data)
-            test_loss += loss_fn(torch.flatten(prediction), labels).item()
+            test_loss += loss_fn(prediction, labels).item()
             correct += (((torch.sigmoid(prediction) > 0.5)  * 1.0) == labels).sum()
 
     print(f"Test Average Loss: {test_loss/len(dataloader)}\nTest Accuracy: {correct/len(dataloader.dataset)}")
